@@ -27,9 +27,9 @@ def post_event():
     with sqlite3.connect("db/database.db", check_same_thread=False) as db:
         cursor = db.cursor()
         query = """
-            insert into Events (id, title, startDate, endDate, userId, done) values (?, "123", "10-10-2022", "20-10-2022", ?, FALSE)
+            insert into Events (id, title, startDate, endDate, userId, done) values (?, ?, ?, ?, ?, ?)
         """
-        cursor.execute(query, (str(uuid.uuid4()), str(uuid.uuid4())))
+        cursor.execute(query, (str(uuid.uuid4()), "123", "10-10-2022", "20-10-2022", str(uuid.uuid4()), False))
         cursor.close()
 
     return "ready"
