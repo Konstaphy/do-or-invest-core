@@ -13,7 +13,7 @@ with sqlite3.connect("db/database.db") as db:
 
 
 @app.route("/event")
-def hello_world():
+def get_events():
     with sqlite3.connect("db/database.db") as db:
         cursor = db.cursor()
         query = """select * from Events"""
@@ -38,9 +38,13 @@ def post_event():
                                input_json["day"],
                                input_json["user_id"],
                                input_json["is_done"]))
+        cursor.execute("""select * from Events""")
+        records = cursor.fetchall()
+        records = list(map(
+            lambda x: {"id": x[0], "title": x[1], "day": x[2], "user_id": x[3], "is_done": bool(x[4])}, records))
         cursor.close()
 
-    return "ready"
+        return jsonify({"events": records})
 
 
 @app.route("/event/check-as-done", methods=['POST'])

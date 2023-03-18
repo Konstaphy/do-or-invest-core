@@ -1,5 +1,3 @@
-import sqlite3
-
 def init_database(cursor):
     # query = """
     #     DROP TABLE "Events"
