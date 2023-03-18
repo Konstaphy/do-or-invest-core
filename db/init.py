@@ -8,8 +8,7 @@ def init_database(cursor):
         CREATE TABLE IF NOT EXISTS "Events" (
         "id"	TEXT NOT NULL UNIQUE,
         "title"	TEXT NOT NULL,
-        "startDate"	TEXT NOT NULL,
-        "endDate"	TEXT NOT NULL,
+        "day"	TEXT NOT NULL,
         "userId"	TEXT NOT NULL,
         "done"	BOOLEAN NOT NULL,
         PRIMARY KEY("id")
