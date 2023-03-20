@@ -1,64 +1,81 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from db.init import init_database
-import uuid
+from datetime import datetime
 
-import sqlite3
+from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
+from playhouse.shortcuts import model_to_dict
+
+from models.event import Event, User, db
+from models.new_event_request import NewEventRequest
+from src import ValidationException
+from models.get_events_by_day_request import GetEventsByDayRequest
+from models.mark_as_done_request import MarkAsDoneRequest
+
+with db:
+    db.create_tables([Event, User])
 
 app = Flask(__name__)
-cors = CORS(app)
-
-with sqlite3.connect("db/database.db") as db:
-    init_database(db.cursor())
+CORS(app, supports_credentials=True)
 
 
-@app.route("/event")
+@app.route("/event", methods=["GET"])
+@cross_origin(supports_credentials=True)
+# Returns all of events
 def get_events():
-    with sqlite3.connect("db/database.db") as db:
-        cursor = db.cursor()
-        query = """select * from Events"""
-        cursor.execute(query)
-        records = cursor.fetchall()
-        cursor.close()
-        records = list(map(
-            lambda x: {"id": x[0], "title": x[1], "day": x[2], "user_id": x[3], "is_done": bool(x[4])}, records))
-        return jsonify({"events": records})
+    all_events = [event for event in Event.select().dicts()]
+    return jsonify(all_events)
 
 
 @app.route("/event/new", methods=['POST'])
+@cross_origin(supports_credentials=True)
+# Creates a new Event
 def post_event():
-    input_json = request.get_json(force=True)
-    with sqlite3.connect("db/database.db") as db:
-        cursor = db.cursor()
-        query = """
-            insert into Events (id, title, day, userId, done) values (?, ?, ?, ?, ?)
-        """
-        cursor.execute(query, (str(uuid.uuid4()),
-                               input_json["title"],
-                               input_json["day"],
-                               input_json["user_id"],
-                               input_json["is_done"]))
-        cursor.execute("""select * from Events""")
-        records = cursor.fetchall()
-        records = list(map(
-            lambda x: {"id": x[0], "title": x[1], "day": x[2], "user_id": x[3], "is_done": bool(x[4])}, records))
-        cursor.close()
+    try:
+        # Parsing request
+        input_json = request.get_json(force=True)
+        body = NewEventRequest(input_json)
+    except ValidationException:
+        # If data is not valid throw an Error
+        return jsonify({"message": "Bad request - 400"}), 400
 
-        return jsonify({"events": records})
+    # Creating new event
+    Event(title=body.title, date=f"{body.date} {body.time}", user_id=body.user_id, is_done=False).save()
+
+    return get_events()
 
 
 @app.route("/event/check-as-done", methods=['POST'])
+@cross_origin(supports_credentials=True)
 def check_as_done():
-    input_json = request.get_json(force=True)
-    with sqlite3.connect("db/database.db") as db:
-        cursor = db.cursor()
-        query = """
-            update Events set done = ? where id = ?
-        """
-        cursor.execute(query, (input_json["is_done"], input_json["event_id"]))
-        cursor.close()
+    try:
+        # Parsing request
+        input_json = request.get_json(force=True)
+        body = MarkAsDoneRequest(input_json)
+    except ValidationException:
+        # If data is not valid throw an Error
+        return jsonify({"message": "Bad request - 400"}), 400
+    query = Event.update(is_done=True).where(id=body.event_id)
+    query.execute()
+    return get_events()
 
-    return "ready"
+
+@app.route("/event/get-all-by-date", methods=['POST'])
+def get_all_by_date():
+    try:
+        # Parsing request
+        input_json = request.get_json(force=True)
+        body = GetEventsByDayRequest(input_json)
+    except ValidationException:
+        # If data is not valid throw an Error
+        return jsonify({"message": "Bad request - 400"}), 400
+    # Selecting all events dated as the date in body
+    res = Event.select() \
+        .where((Event.date.year == datetime.fromisoformat(body.date).year) & (
+            Event.date.month == datetime.fromisoformat(body.date).month) & (
+                       Event.date.day == datetime.fromisoformat(body.date).day
+               )) \
+        .dicts()
+    return jsonify([e for e in res])
 
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(port=8080, debug=True)
