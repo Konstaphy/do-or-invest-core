@@ -1,26 +1,13 @@
 from peewee import *
 
-db = SqliteDatabase("db/database.db")
-
-
-class Entity(Model):
-    id = PrimaryKeyField(unique=True)
-
-    class Meta:
-        database = db
-        order_by = "id"
-
-
-class User(Entity):
-    name = CharField()
-
-    class Meta:
-        db_table = "users"
+from src.models.entity import Entity
+from src.models.user import User
 
 
 class Event(Entity):
     title = CharField()
     date = DateTimeField()
+    priority = IntegerField(default=0)
     user_id = ForeignKeyField(User)
     is_done = BooleanField()
 
