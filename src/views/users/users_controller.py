@@ -49,6 +49,21 @@ def refresh():
                        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, "secret", algorithm="HS256")
 
 
+@users.route("/get-penalty")
+@cross_origin(supports_credentials=True)
+def get_penalty():
+    token = request.headers.get("authorization").split(" ")[1]
+    if not token:
+        return "Unauthorized", 401
+    try:
+        data = jwt.decode(token, "secret", algorithms="HS256")
+    except jwt.exceptions.ExpiredSignatureError:
+        return "Unauthorized", 401
+
+    penalty = User.get(id=data.get("id")).penalty
+    return jsonify({'penalty': penalty})
+
+
 @users.route("/sign-up", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def sign_up():

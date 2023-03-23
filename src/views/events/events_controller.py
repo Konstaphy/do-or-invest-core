@@ -9,7 +9,7 @@ from src.models.requests.get_events_by_day_request import GetEventsByDayRequest
 from src.models.requests.mark_as_done_request import MarkAsDoneRequest
 from src.models.requests.new_event_request import NewEventRequest
 from src.models.user import User
-from src.utils.compare_dates import is_date_less, is_date_more, is_date_equal
+from src.utils.compare_dates import is_date_less
 
 events = Blueprint("events", __name__, url_prefix="/events")
 
