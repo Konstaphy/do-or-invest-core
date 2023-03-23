@@ -10,6 +10,7 @@ class Event(Entity):
     priority = IntegerField(default=0)
     user_id = ForeignKeyField(User)
     is_done = BooleanField()
+    is_expired = BooleanField()
 
     class Meta:
         db_table = "events"
