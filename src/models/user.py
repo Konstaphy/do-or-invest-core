@@ -11,3 +11,9 @@ class User(Entity):
 
     class Meta:
         db_table = "users"
+
+
+class UserTokenData:
+    def __init__(self, user_id, username):
+        self.id = user_id
+        self.username = username

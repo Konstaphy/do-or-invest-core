@@ -45,8 +45,10 @@ def refresh():
     except jwt.exceptions.ExpiredSignatureError:
         return "Unauthorized", 401
 
-    return jwt.encode({"name": data.get("name"), "id": data.get("id"),
-                       "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, "secret", algorithm="HS256")
+    new_token = jwt.encode({"name": data.get("name"), "id": data.get("id"),
+                            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, "secret",
+                           algorithm="HS256")
+    return jsonify({"username": data.get("name"), "id": data.get("id"), "access_token": new_token})
 
 
 @users.route("/get-penalty")
