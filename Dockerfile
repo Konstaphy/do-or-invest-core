@@ -4,4 +4,5 @@ COPY . .
 RUN pip install -r requirements.txt
 ENV PYTHONPATH "${PYTHONPATH}:/usr/app/"
 
+EXPOSE 8080
 CMD [ "python3", "src/main.py" ]

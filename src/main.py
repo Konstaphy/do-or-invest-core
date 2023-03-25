@@ -17,4 +17,4 @@ if __name__ == "__main__":
     app.register_blueprint(events)
     app.register_blueprint(dataController)
     app.register_blueprint(users)
-    app.run(port=8080, debug=True)
+    app.run(host="194.67.103.130", port=8080)
