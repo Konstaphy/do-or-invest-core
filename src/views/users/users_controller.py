@@ -27,7 +27,7 @@ def login():
             {"name": user.name, "id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
             key='secret',
             algorithm="HS256")
-        return jsonify({"id": user.id, "access_token": jwt_token})
+        return jsonify({"username": user.name, "id": user.id, "access_token": jwt_token})
     # if user not found
     return "User not found", 400
 
@@ -76,5 +76,10 @@ def sign_up():
     User(name=authorization.get("username"), password=authorization.get("password"),
          email=request_body.get("email"), penalty=0).save()
 
-    all_users = [user for user in User.select().dicts()]
-    return jsonify(all_users)
+    created_user = User.get(User.name == authorization.get("username"))
+
+    new_token = jwt.encode({"name": authorization.get("username"), "id": created_user.id,
+                            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, "secret",
+                           algorithm="HS256")
+    return jsonify(
+        {"username": authorization.get("username"), "id": created_user.id, "access_token": new_token})

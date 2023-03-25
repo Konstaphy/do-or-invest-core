@@ -1,10 +1,8 @@
 from datetime import datetime
 
-import jwt
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
-from src.exceptions.authorization_exception import AuthorizationException
 from src.exceptions.validation_exception import ValidationException
 from src.models.event import Event
 from src.models.requests.get_events_by_day_request import GetEventsByDayRequest
@@ -49,6 +47,7 @@ def create_new_event(data: UserTokenData):
 
 @events.route("/check-as-done", methods=['POST'])
 @cross_origin(supports_credentials=True)
+@tokenized
 def check_as_done(data: UserTokenData):
     try:
         # Parsing request
@@ -57,7 +56,7 @@ def check_as_done(data: UserTokenData):
     except ValidationException:
         # If data is not valid throw an Error
         return jsonify({"message": "Bad request - 400"}), 400
-    query = Event.update(is_done=True).where(id=body.event_id)
+    query = Event.update(is_done=True).where(Event.id == body.event_id)
     query.execute()
     return get_events()
 
