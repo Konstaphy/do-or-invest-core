@@ -1,4 +1,5 @@
-from src import ValidationException, are_not_included
+from src.exceptions.validation_exception import ValidationException
+from src.utils.are_not_included import are_not_included
 
 
 class NewEventRequest:

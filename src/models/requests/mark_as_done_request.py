@@ -1,4 +1,4 @@
-from src import ValidationException
+from src.exceptions.validation_exception import ValidationException
 
 
 class MarkAsDoneRequest:
