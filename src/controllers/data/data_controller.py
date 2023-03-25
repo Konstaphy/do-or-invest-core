@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from flask_restx import ValidationError
 import csv
 
+from src.exceptions.validation_exception import ValidationException
 from src.models.requests.set_new_data import NewDataRequest
 
 dataController = Blueprint("data", __name__, url_prefix="/data")
@@ -13,7 +13,7 @@ dataController = Blueprint("data", __name__, url_prefix="/data")
 def set_new_data():
     try:
         data = NewDataRequest(request.get_json(force=True))
-    except ValidationError:
+    except ValidationException:
         return "ValidationError", 400
 
     with open("train.csv", 'a') as table:
